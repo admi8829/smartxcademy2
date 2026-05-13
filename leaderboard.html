@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaderboard | Smart-X Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Plus Jakarta Sans', sans-serif; }
+      .font-display { font-family: 'Outfit', sans-serif; }
+    </style>
+  </head>
+  <body class="bg-[#f8fafc] min-h-screen">
+    
+    <div class="max-w-4xl mx-auto px-6 py-12 space-y-12">
+      <header class="text-center space-y-4">
+        <h1 class="text-5xl font-display font-black text-slate-900 uppercase italic tracking-tight">Hall of <span class="text-blue-600">Fame</span></h1>
+        <p class="text-slate-500 font-bold uppercase tracking-[0.2em] text-xs">Top performing scholars specialized by Smart-X AI</p>
+      </header>
+
+      <div class="bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden">
+        <div class="p-8 bg-slate-900 flex items-center justify-between">
+           <div class="flex items-center gap-4">
+             <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black italic text-xl">X</div>
+             <span class="text-white font-black uppercase tracking-widest text-sm">Global Rankings</span>
+           </div>
+           <button onclick="loadLeaderboard()" class="text-blue-400 font-black uppercase tracking-[0.2em] text-[10px] hover:text-white transition-colors">Refresh Sync</button>
+        </div>
+
+        <div id="leaderboardList" class="divide-y divide-slate-50">
+          <!-- Leaderboard items -->
+          <div class="p-20 text-center text-slate-300 font-black italic uppercase tracking-widest">Initialising Database...</div>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <a href="/quiz.html" class="inline-block bg-blue-600 text-white font-black px-10 py-5 rounded-3xl shadow-2xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs">Claim Your Spot</a>
+      </div>
+    </div>
+
+    <script>
+      async function loadLeaderboard() {
+        const container = document.getElementById('leaderboardList');
+        try {
+          const res = await fetch('/api/leaderboard');
+          const data = await res.json();
+          
+          if (data.success && data.leaderboard.length > 0) {
+            container.innerHTML = '';
+            data.leaderboard.forEach((user, index) => {
+              const rank = index + 1;
+              let rankColor = 'text-slate-400';
+              if (rank === 1) rankColor = 'text-yellow-500';
+              if (rank === 2) rankColor = 'text-slate-500';
+              if (rank === 3) rankColor = 'text-orange-500';
+
+              const item = document.createElement('div');
+              item.className = 'flex items-center gap-6 p-6 hover:bg-slate-50 transition-colors group cursor-default';
+              item.innerHTML = `
+                <div class="w-12 text-center">
+                  <span class="text-3xl font-display font-black ${rankColor}">#${rank}</span>
+                </div>
+                <div class="w-16 h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-white group-hover:scale-110 transition-all">
+                  <img src="${user.photo || 'https://ui-avatars.com/api/?name=' + user.name + '&background=random'}" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-xl font-display font-black text-slate-800 leading-none">${user.name}</h3>
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Verified Scholar</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-3xl font-display font-black text-blue-600">${user.total_score}</p>
+                  <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Mastery Points</p>
+                </div>
+              `;
+              container.appendChild(item);
+            });
+          } else {
+            container.innerHTML = '<div class="p-20 text-center text-slate-400 font-bold">No results found in the neural archives.</div>';
+          }
+        } catch (e) {
+          container.innerHTML = '<div class="p-20 text-center text-red-500 font-bold">Sync Error: Failed to reach D1 Cluster.</div>';
+        }
+      }
+
+      loadLeaderboard();
+    </script>
+  </body>
+</html>
